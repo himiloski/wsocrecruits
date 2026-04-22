@@ -980,9 +980,8 @@ function ActivityCard({ activity, onPlayerClick, style }) {
 
 // ===== COMMITMENTS PAGE =====
 function CommitmentsPage({ data, onPlayerClick }) {
-  const [activeTab, setActiveTab] = useState('current');
+  const [activeTab, setActiveTab] = useState('2027');
   const [filters, setFilters] = useState({
-    gradYear: 'All',
     position: 'All',
     school: 'All',
     dateRange: { start: null, end: null }
@@ -994,12 +993,8 @@ function CommitmentsPage({ data, onPlayerClick }) {
       const player = getPlayerFromLinkedRecord(c.fields.Player, data.players);
       if (!player) return false;
 
-      // Tab filter
-      if (activeTab === 'current' && c.fields.Status !== 'Current Cycle') return false;
-      if (activeTab === 'historical' && c.fields.Status === 'Current Cycle') return false;
-
-      // Grad year filter
-      if (filters.gradYear !== 'All' && player.fields['Grad Year'] !== parseInt(filters.gradYear)) return false;
+      // Tab filter by grad year
+      if (activeTab !== 'all' && player.fields['Grad Year'] !== parseInt(activeTab)) return false;
 
       // Position filter (handle multi-select)
       if (filters.position !== 'All') {
@@ -1022,10 +1017,6 @@ function CommitmentsPage({ data, onPlayerClick }) {
     return [...new Set(data.commitments.map(c => c.fields['Committed School']).filter(Boolean))].sort();
   }, [data]);
 
-  const uniqueGradYears = useMemo(() => {
-    return [...new Set(data.players.map(p => p.fields['Grad Year']).filter(Boolean))].sort((a, b) => b - a);
-  }, [data]);
-
   return (
     <div style={{ padding: '40px 24px', maxWidth: '1400px', margin: '0 auto' }}>
       <h1 style={{
@@ -1038,12 +1029,21 @@ function CommitmentsPage({ data, onPlayerClick }) {
       </h1>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', borderBottom: '2px solid rgba(255, 255, 255, 0.1)' }}>
-        <TabButton active={activeTab === 'current'} onClick={() => setActiveTab('current')}>
-          Current Cycle
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', borderBottom: '2px solid rgba(255, 255, 255, 0.1)', flexWrap: 'wrap' }}>
+        <TabButton active={activeTab === '2026'} onClick={() => setActiveTab('2026')}>
+          2026
         </TabButton>
-        <TabButton active={activeTab === 'historical'} onClick={() => setActiveTab('historical')}>
-          Historical
+        <TabButton active={activeTab === '2027'} onClick={() => setActiveTab('2027')}>
+          2027
+        </TabButton>
+        <TabButton active={activeTab === '2028'} onClick={() => setActiveTab('2028')}>
+          2028
+        </TabButton>
+        <TabButton active={activeTab === '2029'} onClick={() => setActiveTab('2029')}>
+          2029
+        </TabButton>
+        <TabButton active={activeTab === 'all'} onClick={() => setActiveTab('all')}>
+          All Years
         </TabButton>
       </div>
 
@@ -1075,7 +1075,6 @@ function CommitmentsPage({ data, onPlayerClick }) {
             filters={filters}
             setFilters={setFilters}
             schools={uniqueSchools}
-            gradYears={uniqueGradYears}
           />
         )}
       </div>
@@ -1194,7 +1193,7 @@ function CommitmentCard({ commitment, player, onPlayerClick, style }) {
   );
 }
 
-function FilterBar({ filters, setFilters, schools, gradYears }) {
+function FilterBar({ filters, setFilters, schools }) {
   return (
     <div style={{
       background: 'rgba(255, 255, 255, 0.05)',
@@ -1205,12 +1204,6 @@ function FilterBar({ filters, setFilters, schools, gradYears }) {
       gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
       gap: '16px'
     }}>
-      <FilterSelect
-        label="Grad Year"
-        value={filters.gradYear}
-        onChange={(value) => setFilters({ ...filters, gradYear: value })}
-        options={['All', ...gradYears.map(String)]}
-      />
       <FilterSelect
         label="Position"
         value={filters.position}
@@ -2432,4 +2425,3 @@ function ErrorState({ error }) {
     </div>
   );
 }
-
