@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, X, ChevronDown, Menu, Calendar, Users, TrendingUp, Award, ExternalLink, Filter } from 'lucide-react';
+import { X, ChevronDown, Menu, Calendar, Users, TrendingUp, Award, ExternalLink, Filter } from 'lucide-react';
 
 // ===== AIRTABLE CONFIGURATION =====
 const AIRTABLE_CONFIG = {
@@ -2432,3 +2432,4 @@ function ErrorState({ error }) {
     </div>
   );
 }
+
