@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { X, ChevronDown, Menu, Calendar, Users, TrendingUp, Award, ExternalLink, Filter } from 'lucide-react';
 
 // ===== AIRTABLE CONFIGURATION =====
@@ -185,16 +186,32 @@ const getSchoolInitials = (schoolName) => {
 
 // ===== MAIN APP COMPONENT =====
 export default function WSOCRecruits() {
-  const [currentPage, setCurrentPage] = useState('home');
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
+}
+
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const airtableData = useAirtableData();
 
+  const currentPage = location.pathname === '/' ? 'home' : location.pathname.substring(1);
+
   const handlePlayerClick = (playerRecord) => {
     if (isPlayerClickable(playerRecord)) {
       setSelectedPlayer(playerRecord);
     }
+  };
+
+  const handleNavigate = (page) => {
+    const path = page === 'home' ? '/' : `/${page}`;
+    navigate(path);
   };
 
   return (
@@ -379,7 +396,7 @@ export default function WSOCRecruits() {
       `}</style>
 
       <Header 
-        onNavigate={setCurrentPage} 
+        onNavigate={handleNavigate} 
         currentPage={currentPage}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -419,7 +436,7 @@ export default function WSOCRecruits() {
           }}>
             <button
               onClick={() => {
-                setCurrentPage('home');
+                handleNavigate('home');
                 setMobileMenuOpen(false);
               }}
               style={{
@@ -438,7 +455,7 @@ export default function WSOCRecruits() {
             </button>
             <button
               onClick={() => {
-                setCurrentPage('commitments');
+                handleNavigate('commitments');
                 setMobileMenuOpen(false);
               }}
               style={{
@@ -457,7 +474,7 @@ export default function WSOCRecruits() {
             </button>
             <button
               onClick={() => {
-                setCurrentPage('transfers');
+                handleNavigate('transfers');
                 setMobileMenuOpen(false);
               }}
               style={{
@@ -476,13 +493,13 @@ export default function WSOCRecruits() {
             </button>
             <button
               onClick={() => {
-                setCurrentPage('preportal');
+                handleNavigate('portal-watch');
                 setMobileMenuOpen(false);
               }}
               style={{
                 background: 'none',
                 border: 'none',
-                color: currentPage === 'preportal' ? 'var(--cyan)' : 'white',
+                color: currentPage === 'portal-watch' ? 'var(--cyan)' : 'white',
                 fontFamily: 'var(--font-display)',
                 fontSize: '24px',
                 cursor: 'pointer',
@@ -495,7 +512,7 @@ export default function WSOCRecruits() {
             </button>
             <button
               onClick={() => {
-                setCurrentPage('resources');
+                handleNavigate('resources');
                 setMobileMenuOpen(false);
               }}
               style={{
@@ -520,36 +537,36 @@ export default function WSOCRecruits() {
         {airtableData.error && <ErrorState error={airtableData.error} />}
         
         {!airtableData.loading && !airtableData.error && (
-          <>
-            {currentPage === 'home' && (
+          <Routes>
+            <Route path="/" element={
               <HomePage 
                 data={airtableData} 
-                onNavigate={setCurrentPage}
+                onNavigate={handleNavigate}
                 onPlayerClick={handlePlayerClick}
               />
-            )}
-            {currentPage === 'commitments' && (
+            } />
+            <Route path="/commitments" element={
               <CommitmentsPage 
                 data={airtableData}
                 onPlayerClick={handlePlayerClick}
               />
-            )}
-            {currentPage === 'transfers' && (
+            } />
+            <Route path="/transfers" element={
               <TransfersPage 
                 data={airtableData}
                 onPlayerClick={handlePlayerClick}
               />
-            )}
-            {currentPage === 'preportal' && (
+            } />
+            <Route path="/portal-watch" element={
               <PrePortalPage 
                 data={airtableData}
                 onPlayerClick={handlePlayerClick}
               />
-            )}
-            {currentPage === 'resources' && (
+            } />
+            <Route path="/resources" element={
               <ResourcesPage />
-            )}
-          </>
+            } />
+          </Routes>
         )}
       </main>
 
@@ -593,7 +610,7 @@ function Header({ onNavigate, currentPage, searchQuery, setSearchQuery, mobileMe
           <NavLink active={currentPage === 'home'} onClick={() => onNavigate('home')}>Home</NavLink>
           <NavLink active={currentPage === 'commitments'} onClick={() => onNavigate('commitments')}>Commitments</NavLink>
           <NavLink active={currentPage === 'transfers'} onClick={() => onNavigate('transfers')}>Transfers</NavLink>
-          <NavLink active={currentPage === 'preportal'} onClick={() => onNavigate('preportal')}>Portal Watch</NavLink>
+          <NavLink active={currentPage === 'portal-watch'} onClick={() => onNavigate('portal-watch')}>Portal Watch</NavLink>
           <NavLink active={currentPage === 'resources'} onClick={() => onNavigate('resources')}>Resources</NavLink>
         </nav>
 
@@ -755,7 +772,7 @@ function HomePage({ data, onNavigate, onPlayerClick }) {
             <CTAButton onClick={() => onNavigate('transfers')}>
               Transfers
             </CTAButton>
-            <CTAButton onClick={() => onNavigate('preportal')}>
+            <CTAButton onClick={() => onNavigate('portal-watch')}>
               Portal Watch
             </CTAButton>
           </div>
