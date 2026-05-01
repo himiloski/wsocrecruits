@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { X, ChevronDown, Menu, Calendar, Users, TrendingUp, Award, ExternalLink, Filter } from 'lucide-react';
 
 // ===== AIRTABLE CONFIGURATION =====
