@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { X, ChevronDown, Menu, Calendar, Users, TrendingUp, Award, ExternalLink, Filter } from 'lucide-react';
 
 // ===== AIRTABLE CONFIGURATION =====
@@ -124,10 +124,26 @@ const getYouTubeEmbedUrl = (url) => {
   const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
   if (youtubeMatch) return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
   
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  
   // Hudl
   if (url.includes('hudl.com')) {
     const hudlMatch = url.match(/hudl\.com\/.*\/([a-zA-Z0-9]+)/);
     if (hudlMatch) return url; // Hudl embeds work with direct URL in iframe
+  }
+  
+  // X/Twitter
+  if (url.includes('twitter.com') || url.includes('x.com')) {
+    // For Twitter/X videos, we'll return the URL as-is and handle it differently in the player modal
+    return url;
+  }
+  
+  // FieldLevel
+  if (url.includes('fieldlevel.com')) {
+    const fieldLevelMatch = url.match(/fieldlevel\.com\/video\/([a-zA-Z0-9-]+)/);
+    if (fieldLevelMatch) return url; // FieldLevel embeds work with direct URL
   }
   
   return url;
@@ -2175,14 +2191,48 @@ function PlayerModal({ player, data, onClose }) {
               }}>
                 Highlight Reel
               </h3>
-              <div className="video-wrapper">
-                <iframe
-                  src={embedUrl}
-                  title="Player Highlight"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
+              {(embedUrl.includes('twitter.com') || embedUrl.includes('x.com')) ? (
+                <a
+                  href={embedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    padding: '20px',
+                    background: 'rgba(0, 217, 255, 0.1)',
+                    border: '2px solid rgba(0, 217, 255, 0.3)',
+                    borderRadius: '12px',
+                    color: 'var(--cyan)',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    fontSize: '16px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.2)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(0, 217, 255, 0.1)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <ExternalLink size={20} />
+                  Watch Highlights on {embedUrl.includes('x.com') ? 'X' : 'Twitter'}
+                </a>
+              ) : (
+                <div className="video-wrapper">
+                  <iframe
+                    src={embedUrl}
+                    title="Player Highlight"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              )}
             </div>
           )}
 
