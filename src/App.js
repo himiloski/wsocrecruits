@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { X, ChevronDown, Menu, Calendar, Users, TrendingUp, Award, ExternalLink, Filter } from 'lucide-react';
 
 // ===== AIRTABLE CONFIGURATION =====
@@ -1573,12 +1573,19 @@ function PrePortalPage({ data, onPlayerClick }) {
     currentSchool: 'All',
     portalWindow: 'All'
   });
+  const [nameSearch, setNameSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
   const filteredPrePortal = useMemo(() => {
     return data.prePortal.filter(p => {
       const player = getPlayerFromLinkedRecord(p.fields.Player, data.players);
       if (!player) return false;
+
+      // Name search
+      if (nameSearch.trim()) {
+        const playerName = player.fields['Player Name']?.toLowerCase() || '';
+        if (!playerName.includes(nameSearch.toLowerCase().trim())) return false;
+      }
 
       // Position filter (handle multi-select)
       if (filters.position !== 'All') {
@@ -1598,7 +1605,7 @@ function PrePortalPage({ data, onPlayerClick }) {
       const dateB = new Date(b.fields['Announcement Date'] || 0);
       return dateB - dateA;
     });
-  }, [data, filters]);
+  }, [data, filters, nameSearch]);
 
   const uniqueSchools = useMemo(() => {
     return [...new Set(data.prePortal.map(p => p.fields['Current School']).filter(Boolean))].sort();
@@ -1659,29 +1666,71 @@ function PrePortalPage({ data, onPlayerClick }) {
             background: 'rgba(255, 255, 255, 0.05)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             borderRadius: '8px',
-            padding: '20px',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '16px'
+            padding: '20px'
           }}>
-            <FilterSelect
-              label="Position"
-              value={filters.position}
-              onChange={(value) => setFilters({ ...filters, position: value })}
-              options={['All', 'GK', 'DEF', 'MID', 'FWD']}
-            />
-            <FilterSelect
-              label="Current School"
-              value={filters.currentSchool}
-              onChange={(value) => setFilters({ ...filters, currentSchool: value })}
-              options={['All', ...uniqueSchools]}
-            />
-            <FilterSelect
-              label="Expected Portal Window"
-              value={filters.portalWindow}
-              onChange={(value) => setFilters({ ...filters, portalWindow: value })}
-              options={['All', ...uniquePortalWindows]}
-            />
+            {/* Name Search */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: 'var(--cyan)'
+              }}>
+                Search by Name
+              </label>
+              <input
+                type="text"
+                placeholder="Enter player name..."
+                value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '2px solid rgba(0, 217, 255, 0.3)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '14px',
+                  outline: 'none',
+                  transition: 'all 0.2s ease'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--cyan)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(0, 217, 255, 0.3)';
+                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+              />
+            </div>
+
+            {/* Filter Dropdowns */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '16px'
+            }}>
+              <FilterSelect
+                label="Position"
+                value={filters.position}
+                onChange={(value) => setFilters({ ...filters, position: value })}
+                options={['All', 'GK', 'DEF', 'MID', 'FWD']}
+              />
+              <FilterSelect
+                label="Current School"
+                value={filters.currentSchool}
+                onChange={(value) => setFilters({ ...filters, currentSchool: value })}
+                options={['All', ...uniqueSchools]}
+              />
+              <FilterSelect
+                label="Expected Portal Window"
+                value={filters.portalWindow}
+                onChange={(value) => setFilters({ ...filters, portalWindow: value })}
+                options={['All', ...uniquePortalWindows]}
+              />
+            </div>
           </div>
         )}
       </div>
